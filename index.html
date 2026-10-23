@@ -1,0 +1,438 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRYPTX | Playfair Cipher Lab</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{--ink:#24324b;--muted:#75839a;--line:#e5eaf5;--mint:#c8f7e8;--teal:#178d83;--lilac:#e8dcff;--violet:#7b5bd6;--peach:#ffe3d6;--paper:#fbfcff;--white:#fff;--shadow:0 18px 50px rgba(91,105,145,.11)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{font-family:Manrope,Arial,sans-serif;color:var(--ink);line-height:1.65;background:radial-gradient(ellipse at 8% 5%,#c8f1e3 0,transparent 32%),radial-gradient(ellipse at 92% 15%,#ded2fb 0,transparent 33%),linear-gradient(180deg,#f5f8ff,#e9edfb);overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background-image:radial-gradient(#a8b6d7 .7px,transparent .7px);background-size:20px 20px;z-index:-1}
+button,input,textarea{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}
+.navbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 7%;background:rgba(255,255,255,.82);backdrop-filter:blur(18px);border-bottom:1px solid rgba(225,232,246,.9)}
+.brand{font-weight:800;font-size:20px;letter-spacing:1.5px}.brand b{color:var(--teal)}
+.nav-links{display:flex;gap:27px;font-size:13px;font-weight:700;color:#62718a}.nav-links a{transition:color .2s,transform .2s}.nav-links a:hover{color:var(--teal);transform:translateY(-2px)}
+.status{font:11px 'DM Mono',monospace;color:var(--teal);background:#e9fbf5;border:1px solid #c9f0e4;border-radius:99px;padding:8px 12px}.status:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c99c;margin-right:8px;box-shadow:0 0 0 4px #d5f8eb}
+.hero{position:relative;text-align:center;padding:88px 20px 70px;overflow:hidden;border-bottom:1px solid #e8edf8}
+.hero:before,.hero:after{content:"";position:absolute;border-radius:50%;filter:blur(1px);pointer-events:none;animation:float 7s ease-in-out infinite}.hero:before{width:190px;height:190px;background:linear-gradient(135deg,#a9e8d4cc,#c4b2f4bb);left:7%;top:18%}.hero:after{width:130px;height:130px;background:linear-gradient(135deg,#f6c9b6cc,#bce8f5bb);right:10%;bottom:8%;animation-delay:-3s}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-18px) rotate(8deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+.eyebrow,.label{color:var(--teal);font:11px 'DM Mono',monospace;letter-spacing:1.8px}
+.eyebrow{position:relative;z-index:1;display:inline-block;padding:9px 15px;border:1px solid #ccefe5;background:rgba(255,255,255,.8);border-radius:30px;box-shadow:0 6px 18px #9edbc91f}
+.hero h1{position:relative;z-index:1;font-size:clamp(40px,6vw,72px);line-height:1.1;margin:24px 0 18px;letter-spacing:-2.8px;animation:rise .7s ease both}
+.hero h1 span{background:linear-gradient(100deg,#168d83,#7d65d9,#e39c80,#168d83);background-size:200% auto;color:transparent;background-clip:text;animation:shimmer 6s linear infinite}
+.hero p{position:relative;z-index:1;max-width:650px;margin:auto;color:var(--muted);font-size:15px;animation:rise .8s ease both}
+.tags{position:relative;z-index:1;display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:29px}.tags span{padding:8px 12px;background:#ffffffd9;border:1px solid var(--line);border-radius:999px;font:10px 'DM Mono',monospace;color:#61718a;box-shadow:0 8px 20px #a8b6d71a;transition:transform .25s,border-color .25s}.tags span:hover{transform:translateY(-4px);border-color:#a7e7d7}
+.container{width:min(1120px,92%);margin:auto;padding:48px 0}
+.section-heading{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}
+h2{font-size:clamp(22px,3vw,28px);margin:5px 0;letter-spacing:-.7px}.section-heading p,.muted{color:var(--muted);font-size:13px}
+.btn{padding:12px 17px;border:1px solid transparent;border-radius:12px;font-size:12px;font-weight:800;transition:transform .25s,box-shadow .25s,filter .25s;box-shadow:0 8px 18px #66789b17}.btn:hover{transform:translateY(-3px);box-shadow:0 13px 25px #66789b27}.btn:active{transform:translateY(0) scale(.98)}
+.primary{background:linear-gradient(135deg,#36c6a3,#80dfc4);color:#174b49}.purple{background:linear-gradient(135deg,#b7a0ff,#d0bfff);color:#42326f}.outline{background:#ffffffd9;border-color:var(--line);color:var(--ink)}.full{width:100%;display:flex;justify-content:space-between;align-items:center}
+.key-panel{display:flex;align-items:center;gap:18px;padding:23px;background:linear-gradient(115deg,#ffffff,#eaf9f3);border:1px solid #dcefe9;border-radius:20px;margin-bottom:25px;box-shadow:var(--shadow);transition:transform .3s}.key-panel:hover{transform:translateY(-2px)}
+.key-icon{display:grid;place-items:center;width:52px;height:52px;flex-shrink:0;border-radius:16px;background:var(--mint);color:var(--teal);font-size:25px;border:1px solid #b9eddd}
+.key-content{flex:1;min-width:0}.key-content label,.operation-panel label{display:block;color:#65748e;font:10px 'DM Mono',monospace;letter-spacing:1px;margin-bottom:8px}
+input,textarea{width:100%;padding:13px 14px;background:#fbfcff;color:var(--ink);border:1px solid #e0e7f3;border-radius:11px;outline:none;transition:border .2s,box-shadow .2s,background .2s}input:focus,textarea:focus{border-color:#73d7bf;box-shadow:0 0 0 4px #b9f2e333;background:white}.key-content input{max-width:450px;text-transform:uppercase}.key-content p{font-size:11px;color:var(--muted);margin-top:6px}
+.notice{display:none;padding:12px 15px;border-radius:12px;margin-bottom:22px;font-size:12px;animation:rise .25s ease}.notice.show{display:block}.notice.success{color:#147b6d;background:#e9fbf4;border:1px solid #bcebdc}.notice.error{color:#b63f57;background:#fff0f2;border:1px solid #f5cbd3}
+.operation-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.operation-panel{min-width:0;padding:25px;background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);transition:transform .3s,box-shadow .3s;animation:rise .7s ease both}.operation-panel:nth-child(2){animation-delay:.12s}.operation-panel:hover{transform:translateY(-5px);box-shadow:0 24px 55px #7182ad24}
+.panel-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:25px}.operation-title{display:flex;align-items:center;gap:12px}.operation-number{display:grid;place-items:center;width:43px;height:43px;border-radius:14px;background:var(--mint);color:var(--teal);font:13px 'DM Mono',monospace;border:1px solid #b9eddd}.operation-number.purple-number{background:var(--lilac);color:var(--violet);border-color:#d9caff}.operation-title h3{font-size:17px}.operation-title p{font-size:11px;color:var(--muted)}.symbol{font-size:27px;color:var(--teal)}.purple-text{color:var(--violet)}
+textarea{min-height:120px;resize:vertical;font:13px/1.8 'DM Mono',monospace}textarea::placeholder,input::placeholder{color:#9aa6b8}
+.counter{display:flex;justify-content:space-between;gap:8px;margin:7px 0 17px;color:var(--muted);font-size:10px}
+.output-box{padding:16px;margin-top:20px;min-height:112px;background:linear-gradient(135deg,#edfff8,#e5faf5);border:1px solid #d0f0e5;border-radius:13px;transition:background .3s}.output-box.purple-box{background:linear-gradient(135deg,#f7f1ff,#f0eaff);border-color:#e3d8ff}
+.output-heading{display:flex;justify-content:space-between;align-items:center;color:var(--teal);font:10px 'DM Mono',monospace;letter-spacing:1px}.purple-box .output-heading{color:var(--violet)}.copy-btn{padding:6px 10px;background:#ffffffc9;color:#4b5871;border:1px solid #dfe7f3;border-radius:8px;font-size:10px;transition:transform .2s}.copy-btn:hover{transform:scale(1.05)}.output-text{margin-top:14px;font:13px/1.8 'DM Mono',monospace;overflow-wrap:anywhere;color:#193d46}.purple-box .output-text{color:#493773}.placeholder{color:#7c8ba1;font-family:Manrope,sans-serif;font-size:12px}
+.matrix-heading{margin-top:62px}
+.badge{padding:8px 11px;border:1px solid #dfd3ff;border-radius:999px;color:var(--violet);font:10px 'DM Mono',monospace;background:#faf7ff}
+.matrix-section{display:grid;grid-template-columns:1fr 1fr;gap:25px;align-items:center;padding:30px;background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}
+.matrix-intro h3{font-size:20px;margin-bottom:10px}.matrix-intro p{color:var(--muted);font-size:13px}.matrix-legend{margin-top:20px;color:#7b8aa2;font-size:11px}.matrix{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;width:min(100%,320px);margin:auto}
+.cell{aspect-ratio:1;display:grid;place-items:center;border-radius:12px;border:1px solid #e1e9f5;background:linear-gradient(145deg,#fff,#f6f9ff);color:#344761;font:16px 'DM Mono',monospace;transition:transform .22s,border-color .22s,background .22s;box-shadow:0 4px 12px #8291b00d;animation:rise .35s ease both}.cell:hover{transform:translateY(-4px) rotate(-2deg);border-color:#78d9c2;color:var(--teal);background:#eafff7}.cell:nth-child(3n){background:linear-gradient(145deg,#fff,#f7f2ff)}.matrix-caption{text-align:center;margin-top:14px;color:var(--teal);font:10px 'DM Mono',monospace}
+.rules-section{padding-top:65px}.rules-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}.rule{padding:20px;background:rgba(255,255,255,.86);border:1px solid var(--line);border-radius:17px;box-shadow:0 12px 24px #94a3b80d;transition:transform .25s,border-color .25s}.rule:hover{transform:translateY(-5px);border-color:#b7e9db}.rule span{color:var(--teal);font:11px 'DM Mono',monospace}.rule h3{font-size:15px;margin:12px 0 7px}.rule p{color:var(--muted);font-size:12px}
+.demo-panel{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:25px;margin-top:30px;background:linear-gradient(110deg,#d9f4e9,#e5dcfb,#fbe2d6);border:1px solid #e2e7f5;border-radius:20px;box-shadow:var(--shadow)}.demo-panel h3{font-size:18px;margin:5px 0}.demo-panel p{color:var(--muted);font-size:12px}
+footer{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;padding:25px 7%;background:#ffffffb8;border-top:1px solid var(--line)}footer p{font-size:11px;color:var(--muted)}footer .developer-credit{color:#65748e}footer .developer-credit strong{color:var(--teal);font-weight:800}footer small{font:9px 'DM Mono',monospace;color:#8b98ad}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+@media(max-width:800px){.status{display:none}.rules-grid{grid-template-columns:repeat(2,1fr)}.hero:before{left:-90px}.hero:after{right:-40px}}
+@media(max-width:620px){.navbar{flex-wrap:wrap;padding:15px 5%}.nav-links{order:3;width:100%;justify-content:center;gap:16px;font-size:12px}.hero{padding:58px 18px}.hero h1{letter-spacing:-1.5px}.container{padding:32px 0}.operation-grid,.matrix-section{grid-template-columns:1fr}.key-panel{flex-wrap:wrap}.key-content{flex-basis:calc(100% - 70px)}.key-panel>.btn{width:100%}.section-heading{align-items:flex-start}.section-heading h2{font-size:21px}.matrix-section{padding:22px}.matrix-intro{text-align:center}.demo-panel{align-items:flex-start;flex-direction:column}.demo-panel .btn{width:100%}footer{justify-content:center;flex-direction:column;text-align:center}}
+@media(max-width:380px){.rules-grid{grid-template-columns:1fr}.operation-panel{padding:16px}.tags span{font-size:9px}}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <a href="#" class="brand">CRYPT<b>X</b></a>
+    <div class="nav-links">
+        <a href="#workspace">Cipher Lab</a>
+        <a href="#key-matrix">Key Matrix</a>
+        <a href="#about">About</a>
+    </div>
+    <span class="status">SYSTEM READY</span>
+</nav>
+
+<header class="hero">
+    <div class="eyebrow">✦ CRYPTOGRAPHY & NETWORK SECURITY</div>
+    <h1>Playfair Cipher <span>Studio.</span></h1>
+    <p>A fresh, interactive space to explore classical cryptography. Build your key matrix, transform secret messages, and discover how the Playfair cipher works.</p>
+    <div class="tags">
+        <span>01 / KEY GENERATION</span>
+        <span>02 / ENCRYPTION</span>
+        <span>03 / DECRYPTION</span>
+    </div>
+</header>
+
+<main class="container">
+
+<section class="section-heading" id="workspace">
+    <div>
+        <div class="label">01 — WORKSPACE</div>
+        <h2>Message Operations</h2>
+        <p>Enter your secret keyword and select an operation.</p>
+    </div>
+    <button class="btn outline" id="resetBtn">↺ Reset</button>
+</section>
+
+<section class="key-panel">
+    <div class="key-icon">✳</div>
+    <div class="key-content">
+        <label for="key">SECRET KEYWORD</label>
+        <input id="key" value="MONARCHY" placeholder="Enter keyword" autocomplete="off">
+        <p>Letters only · I and J share one matrix cell</p>
+    </div>
+    <button class="btn primary" id="generateBtn">Generate Matrix ↗</button>
+</section>
+
+<div id="notice" class="notice" role="status" aria-live="polite"></div>
+
+<section class="operation-grid">
+
+<article class="operation-panel">
+    <div class="panel-top">
+        <div class="operation-title">
+            <span class="operation-number">01</span>
+            <div><h3>Encryption</h3><p>Plaintext → Ciphertext</p></div>
+        </div>
+        <span class="symbol">↗</span>
+    </div>
+
+    <label for="plain">PLAINTEXT MESSAGE</label>
+    <textarea id="plain" placeholder="Type your secret message here..." spellcheck="false"></textarea>
+    <div class="counter"><span>Alphabetic characters only</span><span id="plainCount">0 letters</span></div>
+
+    <button class="btn primary full" id="encryptBtn">Encrypt Message <span>→</span></button>
+
+    <div class="output-box">
+        <div class="output-heading"><span>CIPHERTEXT OUTPUT</span><button class="copy-btn" data-copy="encrypted">Copy</button></div>
+        <p id="encrypted" class="output-text placeholder">Your encrypted message will appear here.</p>
+    </div>
+</article>
+
+<article class="operation-panel">
+    <div class="panel-top">
+        <div class="operation-title">
+            <span class="operation-number purple-number">02</span>
+            <div><h3>Decryption</h3><p>Ciphertext → Plaintext</p></div>
+        </div>
+        <span class="symbol purple-text">↙</span>
+    </div>
+
+    <label for="cipher">CIPHERTEXT MESSAGE</label>
+    <textarea id="cipher" placeholder="Paste ciphertext here..." spellcheck="false"></textarea>
+    <div class="counter"><span>Enter an even number of letters</span><span id="cipherCount">0 letters</span></div>
+
+    <button class="btn purple full" id="decryptBtn">Decrypt Message <span>→</span></button>
+
+    <div class="output-box purple-box">
+        <div class="output-heading"><span>PLAINTEXT OUTPUT</span><button class="copy-btn" data-copy="decrypted">Copy</button></div>
+        <p id="decrypted" class="output-text placeholder">Your decrypted message will appear here.</p>
+    </div>
+</article>
+
+</section>
+
+<section class="section-heading matrix-heading" id="key-matrix">
+    <div>
+        <div class="label">02 — KEY STRUCTURE</div>
+        <h2>Your 5 × 5 Key Matrix</h2>
+        <p>The generated matrix drives both cipher operations.</p>
+    </div>
+    <span class="badge">25 LETTERS · A–Z</span>
+</section>
+
+<section class="matrix-section">
+    <div class="matrix-intro">
+        <h3>✳ Substitution Matrix</h3>
+        <p>Every letter maps to a row and column. Letter pairs are transformed using the Playfair rules.</p>
+        <div class="matrix-legend">● Active key &nbsp; · &nbsp; I / J combined</div>
+    </div>
+    <div>
+        <div id="matrix" class="matrix" aria-label="Playfair key matrix"></div>
+        <p id="matrixKeyLabel" class="matrix-caption">KEY: MONARCHY</p>
+    </div>
+</section>
+
+<section class="rules-section" id="about">
+    <div class="label">03 — ALGORITHM</div>
+    <h2>How the cipher works</h2>
+    <div class="rules-grid">
+        <article class="rule"><span>01</span><h3>Same Row</h3><p>Encryption shifts right; decryption shifts left.</p></article>
+        <article class="rule"><span>02</span><h3>Same Column</h3><p>Encryption shifts down; decryption shifts up.</p></article>
+        <article class="rule"><span>03</span><h3>Rectangle</h3><p>Exchange the column positions of both letters.</p></article>
+        <article class="rule"><span>04</span><h3>Letter Pairs</h3><p>Repeated letters are separated using a filler letter.</p></article>
+    </div>
+</section>
+
+<section class="demo-panel">
+    <div>
+        <div class="label">QUICK DEMO</div>
+        <h3>Test the Playfair algorithm</h3>
+        <p>Load a sample message and try encryption.</p>
+    </div>
+    <button class="btn outline" id="demoBtn">Load Example ↗</button>
+</section>
+
+</main>
+
+<footer>
+    <a href="#" class="brand">CRYPT<b>X</b></a>
+    <p>Cryptography & Network Security · Academic Project</p>
+    <p class="developer-credit">Developed by <strong>MadhuvathiKL</strong></p>
+    <small>CLASSICAL CIPHER SIMULATOR</small>
+</footer>
+
+<script>
+let keyMatrix = [];
+let positions = {};
+
+const $ = id => document.getElementById(id);
+
+function cleanText(text) {
+    return text.toUpperCase().replace(/J/g, "I").replace(/[^A-Z]/g, "");
+}
+
+function showNotice(message, type = "success") {
+    $("notice").textContent = message;
+    $("notice").className = "notice show " + type;
+}
+
+function clearNotice() {
+    $("notice").textContent = "";
+    $("notice").className = "notice";
+}
+
+function generateMatrix() {
+    const key = cleanText($("key").value);
+
+    if (!key) {
+        showNotice("Enter a keyword containing letters A–Z.", "error");
+        return false;
+    }
+
+    const alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
+    const letters = [...new Set(key + alphabet)];
+
+    keyMatrix = [];
+    for (let i = 0; i < 25; i += 5) {
+        keyMatrix.push(letters.slice(i, i + 5));
+    }
+
+    positions = {};
+    keyMatrix.forEach((row, r) => {
+        row.forEach((letter, c) => positions[letter] = [r, c]);
+    });
+    positions.J = positions.I;
+
+    const matrix = $("matrix");
+    matrix.replaceChildren();
+
+    keyMatrix.flat().forEach(letter => {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.textContent = letter;
+        matrix.appendChild(cell);
+    });
+
+    $("matrixKeyLabel").textContent = "KEY: " + key;
+    return true;
+}
+
+function preparePairs(text) {
+    const cleaned = cleanText(text);
+    const pairs = [];
+    let i = 0;
+
+    while (i < cleaned.length) {
+        const first = cleaned[i];
+        const second = cleaned[i + 1];
+
+        if (!second) {
+            pairs.push(first + (first === "X" ? "Q" : "X"));
+            i++;
+        } else if (first === second) {
+            pairs.push(first + (first === "X" ? "Q" : "X"));
+            i++;
+        } else {
+            pairs.push(first + second);
+            i += 2;
+        }
+    }
+    return pairs;
+}
+
+function transformPair(a, b, decrypt = false) {
+    const [r1, c1] = positions[a];
+    const [r2, c2] = positions[b];
+
+    if (r1 === r2) {
+        const shift = decrypt ? 4 : 1;
+        return keyMatrix[r1][(c1 + shift) % 5] +
+               keyMatrix[r2][(c2 + shift) % 5];
+    }
+
+    if (c1 === c2) {
+        const shift = decrypt ? 4 : 1;
+        return keyMatrix[(r1 + shift) % 5][c1] +
+               keyMatrix[(r2 + shift) % 5][c2];
+    }
+
+    return keyMatrix[r1][c2] + keyMatrix[r2][c1];
+}
+
+function encryptMessage() {
+    clearNotice();
+    if (!generateMatrix()) return;
+
+    if (!cleanText($("plain").value)) {
+        showNotice("Enter a plaintext message to encrypt.", "error");
+        return;
+    }
+
+    const pairs = preparePairs($("plain").value);
+    const ciphertext = pairs.map(pair =>
+        transformPair(pair[0], pair[1])
+    ).join("");
+
+    $("encrypted").textContent = ciphertext;
+    $("encrypted").classList.remove("placeholder");
+    $("cipher").value = ciphertext;
+
+    updateCounters();
+    showNotice("Encryption completed successfully.", "success");
+}
+
+function decryptMessage() {
+    clearNotice();
+    if (!generateMatrix()) return;
+
+    const ciphertext = cleanText($("cipher").value);
+
+    if (!ciphertext) {
+        showNotice("Enter ciphertext to decrypt.", "error");
+        return;
+    }
+
+    if (ciphertext.length % 2 !== 0) {
+        showNotice("Ciphertext must contain an even number of letters.", "error");
+        return;
+    }
+
+    let plaintext = "";
+    for (let i = 0; i < ciphertext.length; i += 2) {
+        plaintext += transformPair(ciphertext[i], ciphertext[i + 1], true);
+    }
+
+    $("decrypted").textContent = plaintext;
+    $("decrypted").classList.remove("placeholder");
+    showNotice("Decryption completed successfully.", "success");
+}
+
+function updateCounters() {
+    const p = cleanText($("plain").value).length;
+    const c = cleanText($("cipher").value).length;
+
+    $("plainCount").textContent = `${p} ${p === 1 ? "letter" : "letters"}`;
+    $("cipherCount").textContent = `${c} ${c === 1 ? "letter" : "letters"}`;
+}
+
+function resetProject() {
+    $("key").value = "MONARCHY";
+    $("plain").value = "";
+    $("cipher").value = "";
+
+    $("encrypted").textContent = "Your encrypted message will appear here.";
+    $("decrypted").textContent = "Your decrypted message will appear here.";
+
+    $("encrypted").classList.add("placeholder");
+    $("decrypted").classList.add("placeholder");
+
+    clearNotice();
+    updateCounters();
+    generateMatrix();
+}
+
+function loadDemo() {
+    $("key").value = "MONARCHY";
+    $("plain").value = "INSTRUMENTS";
+    encryptMessage();
+}
+
+async function copyOutput(id) {
+    const output = $(id);
+    const value = output.textContent.trim();
+
+    if (!value || output.classList.contains("placeholder")) {
+        showNotice("There is no output to copy yet.", "error");
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(value);
+        showNotice("Output copied to clipboard.", "success");
+    } catch {
+        const temp = document.createElement("textarea");
+        temp.value = value;
+        temp.style.position = "fixed";
+        temp.style.opacity = "0";
+        document.body.appendChild(temp);
+        temp.select();
+
+        const copied = document.execCommand("copy");
+        temp.remove();
+
+        showNotice(
+            copied ? "Output copied to clipboard." : "Copy failed. Select the output manually.",
+            copied ? "success" : "error"
+        );
+    }
+}
+
+$("generateBtn").addEventListener("click", () => {
+    clearNotice();
+    if (generateMatrix()) showNotice("Key matrix generated successfully.", "success");
+});
+
+$("encryptBtn").addEventListener("click", encryptMessage);
+$("decryptBtn").addEventListener("click", decryptMessage);
+$("resetBtn").addEventListener("click", resetProject);
+$("demoBtn").addEventListener("click", loadDemo);
+
+$("plain").addEventListener("input", updateCounters);
+$("cipher").addEventListener("input", updateCounters);
+$("key").addEventListener("change", () => {
+    clearNotice();
+    if (generateMatrix()) showNotice("Key matrix updated.", "success");
+});
+
+document.querySelectorAll("[data-copy]").forEach(button => {
+    button.addEventListener("click", () => copyOutput(button.dataset.copy));
+});
+
+updateCounters();
+generateMatrix();
+</script>
+
+</body>
+</html>
